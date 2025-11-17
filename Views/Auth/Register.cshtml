@@ -1,0 +1,31 @@
+@model EduMedia.Web.Models.Usuario
+
+@{
+    ViewData["Title"] = "Registro";
+}
+
+<h2>Crear cuenta</h2>
+
+<form asp-action="Register" method="post">
+    <div>
+        <label>Nombre</label>
+        <input asp-for="Nombre" class="form-control" />
+        <span asp-validation-for="Nombre"></span>
+    </div>
+    <div>
+        <label>Correo</label>
+        <input asp-for="Correo" class="form-control" />
+        <span asp-validation-for="Correo"></span>
+    </div>
+    <div>
+        <label>Contraseña</label>
+        <input asp-for="Contrasena" type="password" class="form-control" />
+        <span asp-validation-for="Contrasena"></span>
+    </div>
+    <button type="submit" class="btn btn-primary">Registrarse</button>
+</form>
+
+@if (TempData["Mensaje"] != null)
+{
+    <p>@TempData["Mensaje"]</p>
+}

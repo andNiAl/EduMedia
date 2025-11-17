@@ -1,0 +1,58 @@
+@model EduMedia.Web.Models.ContentItem
+
+@{
+    ViewData["Title"] = "Eliminar Contenido";
+}
+
+<div class="container mt-4">
+    <div class="card shadow p-4">
+        <h3 class="text-danger mb-3">¿Estás segura de que quieres eliminar este contenido?</h3>
+
+        <dl class="row">
+            <dt class="col-sm-3">Título:</dt>
+            <dd class="col-sm-9">@Model.Titulo</dd>
+
+            <dt class="col-sm-3">Categoría:</dt>
+            <dd class="col-sm-9">@Model.Categoria</dd>
+
+            <dt class="col-sm-3">Tipo:</dt>
+            <dd class="col-sm-9">@Model.Tipo</dd>
+
+            <dt class="col-sm-3">URL:</dt>
+            <dd class="col-sm-9">@Model.Url</dd>
+        </dl>
+
+        <div class="d-flex gap-2">
+            <button id="delete-btn" class="btn btn-danger">Eliminar</button>
+            <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    const deleteBtn = document.getElementById("delete-btn");
+    deleteBtn.addEventListener("click", async () => {
+        if (!confirm("¿Seguro que deseas eliminar este contenido?")) return;
+
+        try {
+            const response = await fetch(`/ContentItems/Delete/@Model.Id`, {
+                method: "DELETE"
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                alert("Contenido eliminado correctamente.");
+                window.location.href = "@Url.Action("Index", "ContentItems")";
+            } else {
+                alert("Error al eliminar: " + (result.message || "inténtalo de nuevo."));
+            }
+        } catch (err) {
+            alert("Error de red: " + err.message);
+        }
+    });
+});
+</script>
+}

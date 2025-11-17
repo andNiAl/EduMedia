@@ -1,0 +1,80 @@
+@model EduMedia.Web.Models.ContentItem
+
+@{
+    ViewData["Title"] = "Detalles del Contenido";
+}
+
+<div class="container mt-5">
+    <div class="card shadow-lg border-0 rounded-4 overflow-hidden">
+        <div class="card-header bg-primary text-white text-center py-3">
+            <h3 class="fw-bold mb-0">@Model.Titulo</h3>
+        </div>
+
+        <div class="card-body p-4 text-center">
+
+            @if (!string.IsNullOrEmpty(Model.Imagen) && !Model.Imagen.Contains("placeholder.com") && !Model.Imagen.Contains("img.youtube.com"))
+            {
+                <!-- 🖼️ Imagen personalizada -->
+                <img src="@Model.Imagen" alt="Imagen del contenido" class="img-fluid rounded-3 shadow-sm mb-3" style="max-height: 350px; object-fit: cover;">
+            }
+            else if (!string.IsNullOrEmpty(Model.Url))
+            {
+                <!-- 🎥 Video embebido -->
+                string embed = Model.Url;
+
+                if (Model.Url.Contains("youtube.com/watch?v="))
+                {
+                    var vid = Model.Url.Split("v=")[1].Split("&")[0];
+                    embed = $"https://www.youtube.com/embed/{vid}";
+                }
+                else if (Model.Url.Contains("drive.google.com"))
+                {
+                    var parts = Model.Url.Split('/');
+                    if (parts.Length > 5)
+                    {
+                        var id = parts[5];
+                        embed = $"https://drive.google.com/file/d/{id}/preview";
+                    }
+                }
+
+                <div class="ratio ratio-16x9 mb-3">
+                    <iframe src="@embed" allowfullscreen style="border:none;"></iframe>
+                </div>
+            }
+
+            <p class="text-muted mb-2">
+                <strong>Categoría:</strong> @Model.Categoria &nbsp; | &nbsp;
+                <strong>Tipo:</strong> @Model.Tipo
+            </p>
+
+            <hr class="my-3" />
+
+            <div class="text-start px-3">
+                <h5 class="fw-semibold text-primary">Descripción</h5>
+                <p class="mt-2 fs-5">@Model.Descripcion</p>
+            </div>
+
+            <div class="mt-4">
+                <a asp-action="Index" class="btn btn-outline-secondary shadow-sm">
+                    <i class="bi bi-arrow-left"></i> Volver
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    body {
+        background: #f4f7fb;
+        font-family: 'Segoe UI', sans-serif;
+    }
+
+    .card {
+        animation: fadeIn .5s ease;
+    }
+
+    @@keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+</style>

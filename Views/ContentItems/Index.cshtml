@@ -1,0 +1,151 @@
+@model IEnumerable<EduMedia.Web.Models.ContentItem>
+
+@{
+    ViewData["Title"] = "Biblioteca de Contenidos";
+}
+
+<div class="container mt-5">
+    <h2 class="text-center mb-4 fw-bold text-primary">🎓 Biblioteca de Videos Educativos</h2>
+
+    <!-- 🔍 Filtro -->
+    <form method="get" class="d-flex justify-content-center mb-4">
+        <input type="text" name="search" class="form-control w-50 shadow-sm" placeholder="Buscar videos..." />
+        <button type="submit" class="btn btn-primary ms-2 shadow-sm">
+            <i class="bi bi-search"></i> Buscar
+        </button>
+    </form>
+
+    <!-- ➕ Botón Crear -->
+    <div class="d-flex justify-content-end mb-3">
+        <a asp-action="Create" class="btn btn-success shadow-sm">
+            <i class="bi bi-plus-circle"></i> Agregar nuevo contenido
+        </a>
+    </div>
+
+    <!-- 🎬 Tarjetas -->
+    <div class="row row-cols-1 row-cols-md-3 g-4">
+        @foreach (var item in Model)
+        {
+            string embed = item.Url;
+
+            if (!string.IsNullOrEmpty(item.Url))
+            {
+                if (item.Url.Contains("youtube.com/watch?v="))
+                {
+                    var vid = item.Url.Split("v=")[1].Split("&")[0];
+                    embed = $"https://www.youtube.com/embed/{vid}";
+                }
+                else if (item.Url.Contains("drive.google.com"))
+                {
+                    var parts = item.Url.Split('/');
+                    if (parts.Length > 5)
+                    {
+                        var id = parts[5];
+                        embed = $"https://drive.google.com/file/d/{id}/preview";
+                    }
+                }
+            }
+
+            <div class="col" id="card-@item.Id">
+                <div class="card content-card shadow-lg border-0 rounded-4 overflow-hidden h-100 position-relative">
+
+                    <!-- ✅ Si el usuario colocó imagen personalizada, se muestra -->
+                    @if (!string.IsNullOrEmpty(item.Imagen) && !item.Imagen.Contains("placeholder.com") && !item.Imagen.Contains("img.youtube.com"))
+                    {
+                        <img src="@item.Imagen" class="card-img-top" alt="Imagen personalizada" style="height: 200px; object-fit: cover;">
+                    }
+                    else
+                    {
+                        <!-- 🎥 Si no hay imagen personalizada, se muestra el video embebido -->
+                        <div class="ratio ratio-16x9">
+                            <iframe src="@embed" allowfullscreen style="border:none;"></iframe>
+                        </div>
+                    }
+
+                    <div class="card-body text-center d-flex flex-column">
+                        <h5 class="fw-semibold">@item.Titulo</h5>
+                        <p class="text-muted">@item.Categoria • @item.Tipo</p>
+
+                        <div class="mt-auto d-flex justify-content-center gap-2">
+
+                            <a asp-action="Details" asp-route-id="@item.Id" 
+                               class="btn btn-outline-primary btn-sm shadow-sm">
+                                Ver más
+                            </a>
+
+                            <button class="btn btn-outline-danger btn-sm shadow-sm delete-btn"
+                                    data-id="@item.Id">
+                                Eliminar
+                            </button>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+<!-- 🗑️ JS para eliminar -->
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    document.querySelectorAll(".delete-btn").forEach(btn => {
+        btn.addEventListener("click", async () => {
+
+            if (!confirm("¿Seguro que deseas eliminar este contenido?")) return;
+
+            const id = btn.getAttribute("data-id");
+
+            const response = await fetch(`/ContentItems/Delete/${id}`, {
+                method: "DELETE"
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                const card = document.getElementById(`card-${id}`);
+                card.style.opacity = "0";
+                card.style.transition = "opacity .4s";
+                setTimeout(() => card.remove(), 400);
+            } else {
+                alert("Error al eliminar");
+            }
+        });
+    });
+});
+</script>
+
+<style>
+    body {
+        background: #f4f7fb;
+        font-family: 'Segoe UI', sans-serif;
+    }
+
+    .content-card {
+        transition: transform .3s ease, box-shadow .3s ease;
+        cursor: pointer;
+    }
+
+    .content-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 12px 20px rgba(0,0,0,.15);
+    }
+
+    iframe, .card-img-top {
+        transition: transform .3s ease;
+    }
+
+    .content-card:hover iframe,
+    .content-card:hover .card-img-top {
+        transform: scale(1.03);
+    }
+
+    h2 {
+        animation: fadeDown .8s ease-in-out;
+    }
+
+    @@keyframes fadeDown {
+        from { opacity: 0; transform: translateY(-10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+</style>

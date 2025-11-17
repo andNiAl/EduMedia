@@ -1,0 +1,116 @@
+@model EduMedia.Web.Models.ContentItem
+
+@{
+    ViewData["Title"] = "Agregar nuevo contenido";
+}
+
+<h2 class="text-center text-primary mb-4">📚 Agregar nuevo contenido</h2>
+
+<div class="card shadow-lg p-4 border-0 rounded-4" style="max-width: 700px; margin: auto;">
+    <form asp-action="Create" method="post" id="contentForm">
+        <div class="form-group mb-3">
+            <label asp-for="Titulo" class="form-label fw-bold">Título</label>
+            <input asp-for="Titulo" class="form-control" placeholder="Ej. Introducción a la programación" required />
+            <span asp-validation-for="Titulo" class="text-danger"></span>
+        </div>
+
+        <div class="form-group mb-3">
+            <label asp-for="Categoria" class="form-label fw-bold">Categoría</label>
+            <input asp-for="Categoria" class="form-control" placeholder="Ej. Tecnología, Matemáticas..." required />
+            <span asp-validation-for="Categoria" class="text-danger"></span>
+        </div>
+
+        <div class="form-group mb-3">
+            <label asp-for="Tipo" class="form-label fw-bold">Tipo de contenido</label>
+            <select asp-for="Tipo" class="form-select" required>
+                <option value="">-- Selecciona un tipo --</option>
+                <option value="Video">Video</option>
+                <option value="Artículo">Artículo</option>
+                <option value="Revista">Revista</option>
+                <option value="PDF">PDF</option>
+                <option value="Web">Web</option>
+                <option value="Otro">Otro</option>
+            </select>
+            <span asp-validation-for="Tipo" class="text-danger"></span>
+        </div>
+
+        <div class="form-group mb-3">
+            <label asp-for="Url" class="form-label fw-bold">Enlace del contenido</label>
+            <input asp-for="Url" class="form-control" placeholder="Ej. https://www.youtube.com/watch?v=..." required />
+            <small class="text-muted">Admite enlaces de YouTube, Google Drive u otras fuentes.</small>
+            <span asp-validation-for="Url" class="text-danger"></span>
+        </div>
+
+        <div class="form-group mb-3">
+            <label asp-for="Imagen" class="form-label fw-bold">Imagen (opcional)</label>
+            <input asp-for="Imagen" class="form-control" id="imagenInput" placeholder="URL de imagen opcional" />
+            <span asp-validation-for="Imagen" class="text-danger"></span>
+        </div>
+
+        <!-- Vista previa dinámica -->
+        <div class="text-center my-3">
+            <p class="fw-bold text-secondary mb-2">Vista previa:</p>
+            <img id="previewImagen" src="https://via.placeholder.com/300x180?text=EduMedia" 
+                 class="rounded shadow-sm border" style="max-width: 100%; height: auto;" />
+        </div>
+
+        <div class="form-group mb-3">
+            <label asp-for="Descripcion" class="form-label fw-bold">Descripción</label>
+            <textarea asp-for="Descripcion" class="form-control" rows="3" placeholder="Breve descripción del contenido"></textarea>
+            <span asp-validation-for="Descripcion" class="text-danger"></span>
+        </div>
+
+        <div class="d-grid gap-2 mt-4">
+            <button type="submit" class="btn btn-success btn-lg rounded-3">💾 Guardar contenido</button>
+            <a asp-action="Index" class="btn btn-outline-secondary rounded-3">↩️ Volver</a>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+
+    <script>
+        const urlInput = document.getElementById('Url');
+        const imagenInput = document.getElementById('imagenInput');
+        const previewImagen = document.getElementById('previewImagen');
+
+        // Detecta cambios en el campo URL o Imagen
+        function actualizarVistaPrevia() {
+            const url = urlInput.value.trim();
+            const imagen = imagenInput.value.trim();
+
+            if (imagen) {
+                // Si hay imagen personalizada, mostrar esa
+                previewImagen.src = imagen;
+            } else if (url.includes("youtube.com") || url.includes("youtu.be")) {
+                // Extraer ID del video y mostrar miniatura
+                const videoId = extraerYouTubeId(url);
+                previewImagen.src = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+            } else if (url) {
+                // Si hay URL no YouTube
+                previewImagen.src = "https://via.placeholder.com/300x180?text=Contenido+EduMedia";
+            } else {
+                // Si no hay nada
+                previewImagen.src = "https://via.placeholder.com/300x180?text=EduMedia";
+            }
+        }
+
+        // Función para extraer el ID del video de YouTube
+        function extraerYouTubeId(url) {
+            try {
+                if (url.includes("youtu.be/"))
+                    return url.split("youtu.be/")[1].split("?")[0];
+                if (url.includes("v="))
+                    return url.split("v=")[1].split("&")[0];
+            } catch (e) {
+                console.error("Error extrayendo ID de YouTube:", e);
+            }
+            return "";
+        }
+
+        // Eventos de actualización
+        urlInput.addEventListener('input', actualizarVistaPrevia);
+        imagenInput.addEventListener('input', actualizarVistaPrevia);
+    </script>
+}
